@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#0E7C6B" />
+<title>Road to UBT — cyber prep planner</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#EFF4F5; --card:#fff; --ink:#14232B; --ink-soft:#4A5E68;
+    --line:#D8E2E5; --teal:#0E7C6B; --teal-soft:#DDEEE9;
+    --amber:#B45309; --amber-soft:#FDF0DC;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{background:var(--paper);color:var(--ink);font-family:Sora,ui-sans-serif,system-ui,sans-serif;line-height:1.5}
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;text-align:left;padding:0}
+  .wrap{max-width:600px;margin:0 auto;padding:40px 20px 64px}
+
+  .kicker{color:var(--ink-soft);font-size:14px;margin-bottom:4px}
+  h1{font-size:30px;font-weight:800;line-height:1.15}
+  .lede{margin-top:12px;font-size:14px;color:var(--ink-soft)}
+
+  .route{margin-top:24px}
+  .route-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft);margin-bottom:8px;gap:12px}
+  .route-meta strong{color:var(--ink);font-weight:600}
+  .bar{position:relative;height:12px;border-radius:999px;background:var(--line)}
+  .fill{height:12px;border-radius:999px;background:var(--teal);transition:width .4s ease}
+  .today{position:absolute;top:-4px;width:2px;height:20px;background:var(--ink)}
+  .legend{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft);margin-top:8px}
+
+  .phase{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-top:16px;overflow:hidden}
+  .phase.now{border-color:var(--accent)}
+  .phase-head{width:100%;display:flex;align-items:flex-start;gap:12px;padding:16px 20px}
+  .badge{width:28px;height:28px;border-radius:999px;flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;background:var(--soft);color:var(--accent);margin-top:2px}
+  .badge.done{background:var(--accent);color:#fff}
+  .phase-title{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .pill{font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--soft);color:var(--accent)}
+  .phase-sub{font-size:12px;color:var(--ink-soft);margin-top:2px}
+  .chev{margin-left:auto;flex:none;margin-top:4px;color:var(--ink-soft);transition:transform .2s}
+  .open .chev{transform:rotate(180deg)}
+  .phase-body{padding:0 20px 20px;display:none}
+  .open .phase-body{display:block}
+  .goal{font-size:14px;color:var(--ink-soft);border-left:3px solid var(--accent);padding-left:12px;margin-bottom:16px}
+
+  .task{width:100%;display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--paper)}
+  .task:first-child{border-top:none}
+  .box{width:20px;height:20px;border-radius:6px;flex:none;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;margin-top:2px;transition:background .15s}
+  .task.on .box{background:var(--accent);border-color:var(--accent)}
+  .task span.txt{font-size:14px}
+  .task.on span.txt{color:var(--ink-soft);opacity:.75}
+  .box svg{display:none}
+  .task.on .box svg{display:block}
+
+  .milestone{margin-top:12px;font-size:14px;border-radius:12px;padding:12px 16px;background:var(--soft)}
+  .milestone b{color:var(--accent);font-weight:600}
+
+  .coach{background:var(--ink);color:#E9F0F2;border-radius:16px;padding:20px;margin-top:32px}
+  .coach h2{font-size:16px;font-weight:600;margin-bottom:12px}
+  .coach li{list-style:none;font-size:14px;color:#C7D6DB;display:flex;gap:10px;margin-top:10px}
+  .coach li::before{content:"—";color:var(--teal-soft)}
+
+  footer{margin-top:32px;display:flex;justify-content:space-between;align-items:center;gap:16px;font-size:12px;color:var(--ink-soft)}
+  footer .danger{color:var(--amber);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="kicker">September 2026 → October 2027</p>
+    <h1>From the med lab<br>to the terminal.</h1>
+    <p class="lede">Thirteen months from medical high school to day one of cybersecurity at UBT — built around 12th grade, Matura, and one honest hour a day.</p>
+    <div class="route">
+      <div class="route-meta">
+        <span><strong id="doneCount">0</strong> of <span id="totalCount">0</span> steps done</span>
+        <span id="pace"></span>
+      </div>
+      <div class="bar">
+        <div class="fill" id="fill" style="width:0%"></div>
+        <div class="today" id="todayMark"></div>
+      </div>
+      <div class="legend"><span>green = steps she has ticked</span><span>dark line = today</span></div>
+    </div>
+  </header>
+
+  <main id="phases"></main>
+
+  <section class="coach">
+    <h2>Florian's part</h2>
+    <ul id="coach"></ul>
+  </section>
+
+  <footer>
+    <span>Budget for the whole year: roughly €0–100. Everything core is free.</span>
+    <span id="resetZone"></span>
+  </footer>
+</div>
+
+<script>
+const START = new Date(2026, 8, 1);
+const END   = new Date(2027, 9, 1);
+
+const PHASES = [
+  { id:"p0", n:"0", title:"Digital foundations", range:"September to October 2026", load:"5–6 hrs a week",
+    from:new Date(2026,8,1), to:new Date(2026,10,1), amber:false,
+    goal:"From phone-user to computer-user. Nothing here is optional — CCNA gets much easier once this feels natural.",
+    items:[
+      "Set up her own laptop: her user account, updates, cloud backup",
+      "Typing practice 15 min daily (typing.com or keybr.com) until 30+ WPM",
+      "Build a study folder system; learn file types, zip/unzip, search",
+      "Learn safe installing: where to download, what to avoid, browser basics",
+      "Set up Bitwarden password manager — her first real security habit",
+      "Create accounts: NetAcad, TryHackMe, Google Drive for notes",
+      "Watch “How the Internet works”, then explain an IP address to Florian in her own words",
+      "Start CCNA1 gently: modules 1–3 on NetAcad"
+    ],
+    milestone:"She types 30 WPM and can explain what an IP address is at dinner." },
+  { id:"p1", n:"1", title:"CCNA1 — networking core", range:"November 2026 to February 2027", load:"6–8 hrs a week",
+    from:new Date(2026,10,1), to:new Date(2027,1,15), amber:false,
+    goal:"Finish CCNA1 with real understanding, not just a passing score. Subnetting is the hill — climb it slowly.",
+    items:[
+      "Modules 4–7 (Ethernet, network layer) with every Packet Tracer lab",
+      "Modules 8–11 (IP addressing and subnetting) — slow down here on purpose",
+      "Subnetting drills twice a week, 20 min, until splitting a /24 feels easy",
+      "Modules 12–14 (transport and application layers)",
+      "Modules 15–17 plus the security fundamentals module",
+      "Winter break sprint: catch up, then build one small network solo — 2 PCs, a switch, a router, working pings",
+      "Sunday teach-back: she explains one concept to Florian each week",
+      "Pass every checkpoint exam and the CCNA1 final"
+    ],
+    milestone:"CCNA1 done, plus one network built from scratch with no tutorial open." },
+  { id:"p2", n:"2", title:"Linux and first code", range:"February to April 2027", load:"5–6 hrs a week",
+    from:new Date(2027,1,15), to:new Date(2027,4,1), amber:false,
+    goal:"Comfortable in a terminal, first lines of Python. School is getting heavier — keep sessions short and steady.",
+    items:[
+      "Florian installs VirtualBox + Ubuntu VM on her laptop (his job, not hers)",
+      "TryHackMe “Pre-Security” path — complete it",
+      "Linux basics: moving around, files, permissions (cd, ls, cat, chmod)",
+      "OverTheWire Bandit levels 0–10 — a puzzle game for the terminal",
+      "Python start: variables, loops, if/else (Python for Everybody, ch. 1–5)",
+      "Mini-project: a password strength checker, ~30 lines. Florian reviews, never writes",
+      "Keep networking warm: one Packet Tracer lab a week"
+    ],
+    milestone:"Bandit level 10 beaten and her first script runs." },
+  { id:"p3", n:"3", title:"Matura mode", range:"May to June 2027", load:"2–3 hrs a week, max",
+    from:new Date(2027,4,1), to:new Date(2027,6,1), amber:true,
+    goal:"Passing Matura well is what actually opens UBT's door. Tech pauses — that is the plan, not a failure of it.",
+    items:[
+      "Tech drops to fun-only: typing streaks, a video, an easy TryHackMe room if she feels like it",
+      "Florian takes over all logistics: enrollment documents, deadlines, paperwork",
+      "Zero guilt about skipped study weeks — Matura is the cyber plan right now",
+      "Graduate",
+      "Celebrate properly. She earned it"
+    ],
+    milestone:"Matura passed, diploma in hand." },
+  { id:"p4", n:"4", title:"Summer sprint", range:"July to September 2027", load:"15–20 hrs a week",
+    from:new Date(2027,6,1), to:new Date(2027,9,1), amber:false,
+    goal:"School is over — this is the big push. She walks into UBT ahead of most of her class.",
+    items:[
+      "Python fundamentals complete: functions, lists, dictionaries, files",
+      "Project 1: Caesar cipher encoder/decoder",
+      "Project 2: a quiz app that drills networking terms — coding and revising at once",
+      "Project 3: her choice, anything she finds fun",
+      "TryHackMe “Cyber Security 101” path — complete",
+      "GitHub account; push all three projects (Florian teaches add, commit, push)",
+      "Networking refresh: redo 2–3 CCNA1 labs; start CCNA2 if she is enjoying it",
+      "Set up the uni laptop: VS Code, Linux VM, a note system that survives semester one",
+      "UBT enrollment submitted early, nothing left to the last week",
+      "Visit campus together before day one"
+    ],
+    milestone:"Three projects on GitHub, enrolled, ready for October." }
+];
+
+const COACH = [
+  "Sunday, 30 minutes: review the week, unblock her, plan the next one.",
+  "Be the rubber duck — she explains, you listen. Teaching it back is the real test.",
+  "You build the environments (VMs, installs, accounts) so her hours go to learning.",
+  "Celebrate milestones out loud. CCNA1 finished means dinner out.",
+  "The dip arrives around February–March. It is normal. Push through it together.",
+  "Never do her labs. Unblock, then step back.",
+  "May and June: boyfriend first, coach on pause."
+];
+
+const KEY = "ubt-planner-v1";
+const CHECK_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+const CHEV_SVG  = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+
+let checks = {};
+try { checks = JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e) { checks = {}; }
+
+const today = new Date();
+const current = PHASES.find(p => today >= p.from && today < p.to) || (today < START ? PHASES[0] : PHASES[PHASES.length-1]);
+const openSet = new Set([current.id]);
+const ALL = PHASES.flatMap(p => p.items.map((_, i) => p.id + "-" + i));
+
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(checks)); } catch(e){} }
+
+function accents(p){ return p.amber ? ["var(--amber)","var(--amber-soft)"] : ["var(--teal)","var(--teal-soft)"]; }
+
+function renderPhases(){
+  const root = document.getElementById("phases");
+  root.innerHTML = PHASES.map(p => {
+    const [accent, soft] = accents(p);
+    const ids = p.items.map((_, i) => p.id + "-" + i);
+    const done = ids.filter(id => checks[id]).length;
+    const complete = done === ids.length;
+    const isNow = p.id === current.id;
+    const isOpen = openSet.has(p.id);
+    return `
+    <section class="phase ${isNow ? "now" : ""} ${isOpen ? "open" : ""}" style="--accent:${accent};--soft:${soft}" data-phase="${p.id}">
+      <button class="phase-head" data-toggle="${p.id}">
+        <span class="badge ${complete ? "done" : ""}">${complete ? CHECK_SVG : p.n}</span>
+        <span style="flex:1;min-width:0">
+          <span class="phase-title">${p.title}${isNow ? '<span class="pill">now</span>' : ""}</span>
+          <span class="phase-sub" style="display:block">${p.range} — ${p.load} — <span data-count="${p.id}">${done}</span>/${ids.length}</span>
+        </span>
+        <span class="chev">${CHEV_SVG}</span>
+      </button>
+      <div class="phase-body">
+        <p class="goal">${p.goal}</p>
+        ${p.items.map((item, i) => {
+          const id = p.id + "-" + i;
+          return `<button class="task ${checks[id] ? "on" : ""}" data-task="${id}">
+            <span class="box">${CHECK_SVG}</span><span class="txt">${item}</span>
+          </button>`;
+        }).join("")}
+        <p class="milestone"><b>Milestone:</b> ${p.milestone}</p>
+      </div>
+    </section>`;
+  }).join("");
+}
+
+function renderTop(){
+  const done = ALL.filter(id => checks[id]).length;
+  const taskPct = Math.round(done / ALL.length * 100);
+  const timePct = Math.min(100, Math.max(0, Math.round((today - START) / (END - START) * 100)));
+  document.getElementById("doneCount").textContent = done;
+  document.getElementById("totalCount").textContent = ALL.length;
+  document.getElementById("fill").style.width = taskPct + "%";
+  document.getElementById("todayMark").style.left = "calc(" + timePct + "% - 1px)";
+  document.getElementById("pace").textContent = taskPct >= timePct ? "ahead of the calendar" : "calendar is ahead — steady, not sprint";
+}
+
+function renderReset(confirming){
+  const zone = document.getElementById("resetZone");
+  zone.innerHTML = confirming
+    ? '<button class="danger" id="resetYes">Reset all</button> &nbsp; <button id="resetNo">Keep</button>'
+    : '<button id="resetAsk">Start over</button>';
+  if (confirming){
+    document.getElementById("resetYes").onclick = () => { checks = {}; try{ localStorage.removeItem(KEY); }catch(e){} renderPhases(); renderTop(); renderReset(false); };
+    document.getElementById("resetNo").onclick = () => renderReset(false);
+  } else {
+    document.getElementById("resetAsk").onclick = () => renderReset(true);
+  }
+}
+
+document.getElementById("phases").addEventListener("click", e => {
+  const t = e.target.closest("[data-task]");
+  if (t){
+    const id = t.getAttribute("data-task");
+    if (checks[id]) delete checks[id]; else checks[id] = true;
+    save();
+    t.classList.toggle("on");
+    const pid = id.split("-")[0];
+    const p = PHASES.find(x => x.id === pid);
+    const ids = p.items.map((_, i) => pid + "-" + i);
+    const done = ids.filter(x => checks[x]).length;
+    document.querySelector('[data-count="' + pid + '"]').textContent = done;
+    const badge = document.querySelector('[data-phase="' + pid + '"] .badge');
+    if (done === ids.length){ badge.classList.add("done"); badge.innerHTML = CHECK_SVG; }
+    else { badge.classList.remove("done"); badge.textContent = p.n; }
+    renderTop();
+    return;
+  }
+  const h = e.target.closest("[data-toggle]");
+  if (h){
+    const id = h.getAttribute("data-toggle");
+    openSet.has(id) ? openSet.delete(id) : openSet.add(id);
+    h.closest(".phase").classList.toggle("open");
+  }
+});
+
+document.getElementById("coach").innerHTML = COACH.map(l => "<li>" + l + "</li>").join("");
+renderPhases();
+renderTop();
+renderReset(false);
+</script>
+</body>
+</html>
