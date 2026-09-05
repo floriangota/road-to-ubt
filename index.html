@@ -18,7 +18,14 @@
   html{-webkit-text-size-adjust:100%}
   body{background:var(--paper);color:var(--ink);font-family:Sora,ui-sans-serif,system-ui,sans-serif;line-height:1.5}
   button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;text-align:left;padding:0}
-  .wrap{max-width:600px;margin:0 auto;padding:40px 20px 64px}
+  a{color:inherit}
+  .wrap{max-width:600px;margin:0 auto;padding:32px 20px 64px}
+
+  .strip{font-size:12px;border-radius:12px;padding:10px 14px;margin-bottom:20px}
+  .strip.offline{background:var(--amber-soft);color:var(--amber)}
+  .strip.coach{background:var(--ink);color:#C7D6DB;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}
+  .strip.coach b{color:#E9F0F2;font-weight:600}
+  .strip.coach a{color:var(--teal-soft);text-decoration:underline;margin-left:auto}
 
   .kicker{color:var(--ink-soft);font-size:14px;margin-bottom:4px}
   h1{font-size:30px;font-weight:800;line-height:1.15}
@@ -34,13 +41,16 @@
 
   .phase{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-top:16px;overflow:hidden}
   .phase.now{border-color:var(--accent)}
-  .phase-head{width:100%;display:flex;align-items:flex-start;gap:12px;padding:16px 20px}
+  .phase-head{width:100%;display:flex;align-items:flex-start;gap:12px;padding:16px 20px;cursor:pointer}
   .badge{width:28px;height:28px;border-radius:999px;flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;background:var(--soft);color:var(--accent);margin-top:2px}
   .badge.done{background:var(--accent);color:#fff}
   .phase-title{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .pill{font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--soft);color:var(--accent)}
-  .phase-sub{font-size:12px;color:var(--ink-soft);margin-top:2px}
-  .chev{margin-left:auto;flex:none;margin-top:4px;color:var(--ink-soft);transition:transform .2s}
+  .phase-sub{font-size:12px;color:var(--ink-soft);margin-top:2px;display:block}
+  .headright{margin-left:auto;flex:none;display:flex;align-items:center;gap:10px;margin-top:2px}
+  .lockbtn{font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;border:1.5px solid var(--line);color:var(--ink-soft)}
+  .lockbtn.unlock{border-color:var(--teal);color:var(--teal)}
+  .chev{color:var(--ink-soft);transition:transform .2s;display:flex}
   .open .chev{transform:rotate(180deg)}
   .phase-body{padding:0 20px 20px;display:none}
   .open .phase-body{display:block}
@@ -58,10 +68,14 @@
   .milestone{margin-top:12px;font-size:14px;border-radius:12px;padding:12px 16px;background:var(--soft)}
   .milestone b{color:var(--accent);font-weight:600}
 
-  .coach{background:var(--ink);color:#E9F0F2;border-radius:16px;padding:20px;margin-top:32px}
-  .coach h2{font-size:16px;font-weight:600;margin-bottom:12px}
-  .coach li{list-style:none;font-size:14px;color:#C7D6DB;display:flex;gap:10px;margin-top:10px}
-  .coach li::before{content:"—";color:var(--teal-soft)}
+  .locked{border-style:dashed;background:transparent;padding:20px;display:flex;gap:12px;align-items:flex-start;color:var(--ink-soft)}
+  .locked .badge{background:var(--line);color:var(--ink-soft)}
+  .locked p{font-size:14px}
+
+  .coachbox{background:var(--ink);color:#E9F0F2;border-radius:16px;padding:20px;margin-top:32px}
+  .coachbox h2{font-size:16px;font-weight:600;margin-bottom:12px}
+  .coachbox li{list-style:none;font-size:14px;color:#C7D6DB;display:flex;gap:10px;margin-top:10px}
+  .coachbox li::before{content:"—";color:var(--teal-soft)}
 
   footer{margin-top:32px;display:flex;justify-content:space-between;align-items:center;gap:16px;font-size:12px;color:var(--ink-soft)}
   footer .danger{color:var(--amber);font-weight:600}
@@ -69,37 +83,28 @@
 </head>
 <body>
 <div class="wrap">
+  <div id="strips"></div>
   <header>
     <p class="kicker">September 2026 → October 2027</p>
     <h1>From the med lab<br>to the terminal.</h1>
-    <p class="lede">Thirteen months from medical high school to day one of cybersecurity at UBT — built around 12th grade, Matura, and one honest hour a day.</p>
-    <div class="route">
-      <div class="route-meta">
-        <span><strong id="doneCount">0</strong> of <span id="totalCount">0</span> steps done</span>
-        <span id="pace"></span>
-      </div>
-      <div class="bar">
-        <div class="fill" id="fill" style="width:0%"></div>
-        <div class="today" id="todayMark"></div>
-      </div>
-      <div class="legend"><span>green = steps she has ticked</span><span>dark line = today</span></div>
-    </div>
+    <p class="lede" id="lede"></p>
+    <div class="route" id="route"></div>
   </header>
 
   <main id="phases"></main>
-
-  <section class="coach">
-    <h2>Florian's part</h2>
-    <ul id="coach"></ul>
-  </section>
-
-  <footer>
-    <span>Budget for the whole year: roughly €0–100. Everything core is free.</span>
-    <span id="resetZone"></span>
-  </footer>
+  <div id="coachTips"></div>
+  <footer id="foot"></footer>
 </div>
 
 <script>
+/* ================= CONFIG — edit these three lines ================= */
+const CONFIG = {
+  SUPABASE_URL: "https://lwfqcwkmcnnzgxbppetl.supabase.co/rest/v1/",        // e.g. "https://abcdefgh.supabase.co"  (empty = local-only mode)
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZnFjd2ttY25uemd4YnBwZXRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2Mjc5MzIsImV4cCI6MjEwNDIwMzkzMn0.ctPUMRU84ps8zBMkZyrLu60piKICjhXVD2UsWj__wA4",   // Project Settings → API → anon public key
+  COACH_CODE: "BABA"  // your secret; open index.html?coach=THIS to enter coach view
+};
+/* =================================================================== */
+
 const START = new Date(2026, 8, 1);
 const END   = new Date(2027, 9, 1);
 
@@ -174,105 +179,247 @@ const PHASES = [
     milestone:"Three projects on GitHub, enrolled, ready for October." }
 ];
 
-const COACH = [
+const COACH_TIPS = [
   "Sunday, 30 minutes: review the week, unblock her, plan the next one.",
   "Be the rubber duck — she explains, you listen. Teaching it back is the real test.",
   "You build the environments (VMs, installs, accounts) so her hours go to learning.",
   "Celebrate milestones out loud. CCNA1 finished means dinner out.",
   "The dip arrives around February–March. It is normal. Push through it together.",
   "Never do her labs. Unblock, then step back.",
-  "May and June: boyfriend first, coach on pause."
+  "May and June: boyfriend first, coach on pause.",
+  "Unlock the next phase a few days before she finishes the current one — momentum matters more than surprise."
 ];
 
-const KEY = "ubt-planner-v1";
 const CHECK_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
 const CHEV_SVG  = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+const LOCK_SVG  = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
 
-let checks = {};
-try { checks = JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e) { checks = {}; }
+/* ---------- role ---------- */
+const qs = new URLSearchParams(location.search);
+try {
+  if (qs.get("coach") === "off") localStorage.removeItem("ubt-coach");
+  else if (qs.get("coach") && CONFIG.COACH_CODE && qs.get("coach") === CONFIG.COACH_CODE) localStorage.setItem("ubt-coach", "1");
+} catch(e){}
+let isCoach = false;
+try { isCoach = localStorage.getItem("ubt-coach") === "1"; } catch(e){}
 
+/* ---------- state + sync ---------- */
+const online = !!(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY);
+const API = online ? CONFIG.SUPABASE_URL.replace(/\/$/, "") + "/rest/v1/planner_state" : null;
+const HEADERS = online ? {
+  "apikey": CONFIG.SUPABASE_ANON_KEY,
+  "Authorization": "Bearer " + CONFIG.SUPABASE_ANON_KEY,
+  "Content-Type": "application/json"
+} : {};
+
+let state = { checks: {}, unlocked: ["p0"], updated_at: null };
+let lastLocalEdit = 0;
+let saveTimer = null;
+
+function cacheLoad(){ try { const c = JSON.parse(localStorage.getItem("ubt-cache")); if (c && c.checks) state = c; } catch(e){} }
+function cacheSave(){ try { localStorage.setItem("ubt-cache", JSON.stringify(state)); } catch(e){} }
+
+async function pullState(){
+  if (!online) return;
+  try {
+    const r = await fetch(API + "?id=eq.1&select=checks,unlocked,updated_at", { headers: HEADERS });
+    if (!r.ok) return;
+    const rows = await r.json();
+    if (!rows.length) return;
+    if (Date.now() - lastLocalEdit < 5000) return; // don't clobber ticks in flight
+    state = { checks: rows[0].checks || {}, unlocked: rows[0].unlocked || ["p0"], updated_at: rows[0].updated_at };
+    cacheSave();
+    renderAll();
+  } catch(e){ /* offline — keep local */ }
+}
+
+async function pushFields(fields){
+  cacheSave();
+  if (!online) return;
+  fields.updated_at = new Date().toISOString();
+  try {
+    await fetch(API + "?id=eq.1", { method:"PATCH", headers:{ ...HEADERS, "Prefer":"return=minimal" }, body: JSON.stringify(fields) });
+  } catch(e){ /* will retry on next change */ }
+}
+
+function queueChecksSave(){
+  lastLocalEdit = Date.now();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => pushFields({ checks: state.checks }), 600);
+}
+
+/* ---------- helpers ---------- */
 const today = new Date();
-const current = PHASES.find(p => today >= p.from && today < p.to) || (today < START ? PHASES[0] : PHASES[PHASES.length-1]);
-const openSet = new Set([current.id]);
-const ALL = PHASES.flatMap(p => p.items.map((_, i) => p.id + "-" + i));
-
-function save(){ try { localStorage.setItem(KEY, JSON.stringify(checks)); } catch(e){} }
-
 function accents(p){ return p.amber ? ["var(--amber)","var(--amber-soft)"] : ["var(--teal)","var(--teal-soft)"]; }
-
-function renderPhases(){
-  const root = document.getElementById("phases");
-  root.innerHTML = PHASES.map(p => {
-    const [accent, soft] = accents(p);
-    const ids = p.items.map((_, i) => p.id + "-" + i);
-    const done = ids.filter(id => checks[id]).length;
-    const complete = done === ids.length;
-    const isNow = p.id === current.id;
-    const isOpen = openSet.has(p.id);
-    return `
-    <section class="phase ${isNow ? "now" : ""} ${isOpen ? "open" : ""}" style="--accent:${accent};--soft:${soft}" data-phase="${p.id}">
-      <button class="phase-head" data-toggle="${p.id}">
-        <span class="badge ${complete ? "done" : ""}">${complete ? CHECK_SVG : p.n}</span>
-        <span style="flex:1;min-width:0">
-          <span class="phase-title">${p.title}${isNow ? '<span class="pill">now</span>' : ""}</span>
-          <span class="phase-sub" style="display:block">${p.range} — ${p.load} — <span data-count="${p.id}">${done}</span>/${ids.length}</span>
-        </span>
-        <span class="chev">${CHEV_SVG}</span>
-      </button>
-      <div class="phase-body">
-        <p class="goal">${p.goal}</p>
-        ${p.items.map((item, i) => {
-          const id = p.id + "-" + i;
-          return `<button class="task ${checks[id] ? "on" : ""}" data-task="${id}">
-            <span class="box">${CHECK_SVG}</span><span class="txt">${item}</span>
-          </button>`;
-        }).join("")}
-        <p class="milestone"><b>Milestone:</b> ${p.milestone}</p>
-      </div>
-    </section>`;
-  }).join("");
+function phaseIds(p){ return p.items.map((_, i) => p.id + "-" + i); }
+function isUnlocked(p){ return state.unlocked.includes(p.id); }
+function visiblePhases(){ return isCoach ? PHASES : PHASES.filter(isUnlocked); }
+function nowPhaseId(){
+  if (isCoach){
+    const byDate = PHASES.find(p => today >= p.from && today < p.to);
+    return byDate ? byDate.id : (today < START ? "p0" : "p4");
+  }
+  const un = PHASES.filter(isUnlocked);
+  return un.length ? un[un.length - 1].id : null;
+}
+function relTime(iso){
+  if (!iso) return "no activity yet";
+  const s = Math.max(0, (Date.now() - new Date(iso)) / 1000);
+  if (s < 90) return "just now";
+  if (s < 3600) return Math.round(s/60) + " min ago";
+  if (s < 86400) return Math.round(s/3600) + " h ago";
+  return Math.round(s/86400) + " d ago";
 }
 
-function renderTop(){
-  const done = ALL.filter(id => checks[id]).length;
-  const taskPct = Math.round(done / ALL.length * 100);
-  const timePct = Math.min(100, Math.max(0, Math.round((today - START) / (END - START) * 100)));
-  document.getElementById("doneCount").textContent = done;
-  document.getElementById("totalCount").textContent = ALL.length;
-  document.getElementById("fill").style.width = taskPct + "%";
-  document.getElementById("todayMark").style.left = "calc(" + timePct + "% - 1px)";
-  document.getElementById("pace").textContent = taskPct >= timePct ? "ahead of the calendar" : "calendar is ahead — steady, not sprint";
+const openSet = new Set();
+
+/* ---------- render ---------- */
+function renderStrips(){
+  let html = "";
+  if (!online) html += '<div class="strip offline">Running locally — progress is not syncing yet. Add your Supabase URL and key in the CONFIG block (see README).</div>';
+  if (isCoach) html += '<div class="strip coach"><span><b>Coach view.</b> She sees only unlocked phases.</span><span>Last activity: <b>' + relTime(state.updated_at) + '</b></span><a href="?coach=off">Preview her view</a></div>';
+  document.getElementById("strips").innerHTML = html;
 }
 
-function renderReset(confirming){
-  const zone = document.getElementById("resetZone");
-  zone.innerHTML = confirming
-    ? '<button class="danger" id="resetYes">Reset all</button> &nbsp; <button id="resetNo">Keep</button>'
-    : '<button id="resetAsk">Start over</button>';
-  if (confirming){
-    document.getElementById("resetYes").onclick = () => { checks = {}; try{ localStorage.removeItem(KEY); }catch(e){} renderPhases(); renderTop(); renderReset(false); };
-    document.getElementById("resetNo").onclick = () => renderReset(false);
+function renderHeader(){
+  document.getElementById("lede").textContent = isCoach
+    ? "Thirteen months from medical high school to day one of cybersecurity at UBT. You pace it; she walks it."
+    : "Your road from the medical world to cybersecurity at UBT — one phase at a time, one honest hour a day.";
+
+  const route = document.getElementById("route");
+  if (isCoach){
+    const all = PHASES.flatMap(phaseIds);
+    const done = all.filter(id => state.checks[id]).length;
+    const taskPct = Math.round(done / all.length * 100);
+    const timePct = Math.min(100, Math.max(0, Math.round((today - START) / (END - START) * 100)));
+    route.innerHTML =
+      '<div class="route-meta"><span><strong>' + done + '</strong> of ' + all.length + ' steps done</span><span>' +
+      (taskPct >= timePct ? "ahead of the calendar" : "calendar is ahead — steady, not sprint") + '</span></div>' +
+      '<div class="bar"><div class="fill" style="width:' + taskPct + '%"></div><div class="today" style="left:calc(' + timePct + '% - 1px)"></div></div>' +
+      '<div class="legend"><span>green = her ticked steps</span><span>dark line = today</span></div>';
   } else {
-    document.getElementById("resetAsk").onclick = () => renderReset(true);
+    const ids = PHASES.filter(isUnlocked).flatMap(phaseIds);
+    const done = ids.filter(id => state.checks[id]).length;
+    const pct = ids.length ? Math.round(done / ids.length * 100) : 0;
+    route.innerHTML =
+      '<div class="route-meta"><span><strong>' + done + '</strong> of ' + ids.length + ' open steps done</span><span>' + pct + '%</span></div>' +
+      '<div class="bar"><div class="fill" style="width:' + pct + '%"></div></div>';
   }
 }
 
+function renderPhases(){
+  const nowId = nowPhaseId();
+  const vis = visiblePhases();
+  let html = vis.map(p => {
+    const [accent, soft] = accents(p);
+    const ids = phaseIds(p);
+    const done = ids.filter(id => state.checks[id]).length;
+    const complete = done === ids.length;
+    const unlocked = isUnlocked(p);
+    const isOpen = openSet.has(p.id);
+    const lockBtn = isCoach
+      ? '<button class="lockbtn ' + (unlocked ? "" : "unlock") + '" data-lock="' + p.id + '">' + (unlocked ? "Lock" : "Unlock") + '</button>'
+      : "";
+    return '' +
+    '<section class="phase ' + (p.id === nowId ? "now " : "") + (isOpen ? "open" : "") + '" style="--accent:' + accent + ';--soft:' + soft + '" data-phase="' + p.id + '">' +
+      '<div class="phase-head" data-toggle="' + p.id + '">' +
+        '<span class="badge ' + (complete ? "done" : "") + '">' + (complete ? CHECK_SVG : p.n) + '</span>' +
+        '<span style="flex:1;min-width:0">' +
+          '<span class="phase-title">' + p.title +
+            (p.id === nowId ? '<span class="pill">now</span>' : "") +
+            (isCoach && !unlocked ? '<span class="pill" style="--soft:var(--line);--accent:var(--ink-soft);display:inline-flex;gap:4px;align-items:center">' + LOCK_SVG + ' hidden from her</span>' : "") +
+          '</span>' +
+          '<span class="phase-sub">' + p.range + ' — ' + p.load + ' — <span data-count="' + p.id + '">' + done + '</span>/' + ids.length + '</span>' +
+        '</span>' +
+        '<span class="headright">' + lockBtn + '<span class="chev">' + CHEV_SVG + '</span></span>' +
+      '</div>' +
+      '<div class="phase-body">' +
+        '<p class="goal">' + p.goal + '</p>' +
+        p.items.map((item, i) => {
+          const id = p.id + "-" + i;
+          return '<button class="task ' + (state.checks[id] ? "on" : "") + '" data-task="' + id + '">' +
+            '<span class="box">' + CHECK_SVG + '</span><span class="txt">' + item + '</span></button>';
+        }).join("") +
+        '<p class="milestone"><b>Milestone:</b> ' + p.milestone + '</p>' +
+      '</div>' +
+    '</section>';
+  }).join("");
+
+  if (!isCoach && vis.length < PHASES.length){
+    const openIds = vis.flatMap(phaseIds);
+    const allOpenDone = openIds.length > 0 && openIds.every(id => state.checks[id]);
+    html += '<section class="phase locked"><span class="badge">' + LOCK_SVG + '</span><p>' +
+      (allOpenDone
+        ? "Everything open is done — nice. The next phase unlocks when Florian opens it."
+        : "More phases are waiting, locked on purpose. One phase at a time is the whole point.") +
+      '</p></section>';
+  }
+  document.getElementById("phases").innerHTML = html;
+}
+
+function renderCoachTips(){
+  document.getElementById("coachTips").innerHTML = isCoach
+    ? '<section class="coachbox"><h2>Florian\'s part</h2><ul>' + COACH_TIPS.map(l => "<li>" + l + "</li>").join("") + '</ul></section>'
+    : "";
+}
+
+function renderFoot(confirming){
+  const foot = document.getElementById("foot");
+  if (!isCoach){
+    foot.innerHTML = '<span>Budget for the whole year: roughly €0–100. Everything core is free.</span>';
+    return;
+  }
+  foot.innerHTML = '<span>Budget for the whole year: roughly €0–100. Everything core is free.</span><span id="resetZone"></span>';
+  const zone = document.getElementById("resetZone");
+  zone.innerHTML = confirming
+    ? '<button class="danger" id="resetYes">Reset her ticks</button> &nbsp; <button id="resetNo">Keep</button>'
+    : '<button id="resetAsk">Reset progress</button>';
+  if (confirming){
+    document.getElementById("resetYes").onclick = () => { state.checks = {}; lastLocalEdit = Date.now(); pushFields({ checks: {} }); renderAll(); };
+    document.getElementById("resetNo").onclick = () => renderFoot(false);
+  } else {
+    document.getElementById("resetAsk").onclick = () => renderFoot(true);
+  }
+}
+
+function renderAll(){
+  renderStrips();
+  renderHeader();
+  renderPhases();
+  renderCoachTips();
+  renderFoot(false);
+}
+
+/* ---------- events ---------- */
 document.getElementById("phases").addEventListener("click", e => {
+  const lock = e.target.closest("[data-lock]");
+  if (lock){
+    const id = lock.getAttribute("data-lock");
+    state.unlocked = state.unlocked.includes(id)
+      ? state.unlocked.filter(x => x !== id)
+      : PHASES.map(p => p.id).filter(pid => pid === id || state.unlocked.includes(pid)); // keep order
+    lastLocalEdit = Date.now();
+    pushFields({ unlocked: state.unlocked });
+    renderAll();
+    return;
+  }
   const t = e.target.closest("[data-task]");
   if (t){
     const id = t.getAttribute("data-task");
-    if (checks[id]) delete checks[id]; else checks[id] = true;
-    save();
+    if (state.checks[id]) delete state.checks[id]; else state.checks[id] = true;
+    queueChecksSave();
     t.classList.toggle("on");
     const pid = id.split("-")[0];
     const p = PHASES.find(x => x.id === pid);
-    const ids = p.items.map((_, i) => pid + "-" + i);
-    const done = ids.filter(x => checks[x]).length;
-    document.querySelector('[data-count="' + pid + '"]').textContent = done;
+    const done = phaseIds(p).filter(x => state.checks[x]).length;
+    const counter = document.querySelector('[data-count="' + pid + '"]');
+    if (counter) counter.textContent = done;
     const badge = document.querySelector('[data-phase="' + pid + '"] .badge');
-    if (done === ids.length){ badge.classList.add("done"); badge.innerHTML = CHECK_SVG; }
-    else { badge.classList.remove("done"); badge.textContent = p.n; }
-    renderTop();
+    if (badge){
+      if (done === p.items.length){ badge.classList.add("done"); badge.innerHTML = CHECK_SVG; }
+      else { badge.classList.remove("done"); badge.textContent = p.n; }
+    }
+    renderHeader();
     return;
   }
   const h = e.target.closest("[data-toggle]");
@@ -283,10 +430,14 @@ document.getElementById("phases").addEventListener("click", e => {
   }
 });
 
-document.getElementById("coach").innerHTML = COACH.map(l => "<li>" + l + "</li>").join("");
-renderPhases();
-renderTop();
-renderReset(false);
+/* ---------- boot ---------- */
+cacheLoad();
+const startNow = nowPhaseId();
+if (startNow) openSet.add(startNow);
+renderAll();
+pullState();
+setInterval(pullState, 20000);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") pullState(); });
 </script>
 </body>
 </html>
