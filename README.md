@@ -53,16 +53,16 @@ Grab two values: **Project URL** (Connect dialog, or Settings → Data API) and 
 
 ```bash
 npm install
-cp .env.example .env    # fill in the three values
 npm run dev
 ```
 
+The Supabase URL, anon key and coach code live in `src/config.ts`. Edit them there. A `.env` file with the same `VITE_*` names (see `.env.example`) overrides them if you ever want to.
+
 ### 3. Deploy to GitHub Pages
 
-1. Push the repo to GitHub (`main` branch).
-2. Repo → **Settings → Secrets and variables → Actions** → add three repository secrets: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_COACH_CODE`.
-3. Repo → **Settings → Pages** → Source: **GitHub Actions** (not "deploy from branch").
-4. Push to `main` (or run the workflow manually) — the included workflow builds and publishes `dist/`.
+1. Push to `main`. The included workflow builds and publishes `dist/` — no repo secrets needed, the values in `src/config.ts` are used.
+2. If the site does not appear: Repo → **Settings → Pages** → Source: **GitHub Actions**.
+3. Optional: repository secrets `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_COACH_CODE` override the file values at build time.
 
 ## Honest notes
 
